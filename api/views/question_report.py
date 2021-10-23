@@ -1,4 +1,8 @@
-from rest_framework import viewsets
+from collections import OrderedDict
+
+from django_filters import NumberFilter
+from django_filters.rest_framework import FilterSet, DjangoFilterBackend
+from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -13,6 +17,8 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
     queryset = QuestionReport.objects.all()
     serializer_class = QuestionReportSerializer
     permission_classes = [IsAuthenticated, ]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['question','user']
 
     def perform_create(self, serializer):
         serializer.save()
@@ -29,3 +35,11 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
         question_report.save()
         return Response(request.data)
 
+    @action(detail=False, methods=['get'], url_path='get-report')
+    def get_report(self, request, pk=None):
+        queryset = self.filter_queryset(self.get_queryset())
+        serialized_questions = {}
+        for q in queryset:
+            serialized_questions = QuestionReportSerializer(q).data
+
+        return Response(serialized_questions)
