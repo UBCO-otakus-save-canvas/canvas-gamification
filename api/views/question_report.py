@@ -44,8 +44,16 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='get-report')
     def get_report(self, request, pk=None):
         queryset = self.filter_queryset(self.get_queryset())
-        serialized_questions = {}
+        serialized_reports = {}
         for q in queryset:
-            serialized_questions = QuestionReportSerializer(q).data
+            serialized_reports = QuestionReportSerializer(q).data
 
-        return Response(serialized_questions)
+        return Response(serialized_reports)
+
+    @action(detail=False, methods=['delete'], url_path='delete-report')
+    def delete_report(self, request, pk=None):
+        queryset = self.filter_queryset(self.get_queryset())
+        for q in queryset:
+            q.delete()
+
+        return Response("success")
