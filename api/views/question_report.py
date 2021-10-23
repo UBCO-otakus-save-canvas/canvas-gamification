@@ -4,6 +4,7 @@ from django_filters import NumberFilter
 from django_filters.rest_framework import FilterSet, DjangoFilterBackend
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from accounts.models import MyUser
@@ -25,14 +26,19 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='add-report')
     def create_report(self, request, pk=None):
+
         report = request.data.get('report')
         report_details = request.data.get('report_details')
         user_instance = request.data.get('user')
         user = MyUser.objects.all().filter(username=user_instance.get('username')).get()
         question_instance = request.data.get('question')
         question = Question.objects.all().filter(id=question_instance.get('id')).get()
-        question_report = QuestionReport(report=report, report_details=report_details, user=user, question=question)
+        question_report, created = QuestionReport.objects.update_or_create(user=user, question=question,
+                                                                           defaults={'report': report,
+                                                                                     'report_details': report_details},
+                                                                           )
         question_report.save()
+
         return Response(request.data)
 
     @action(detail=False, methods=['get'], url_path='get-report')
