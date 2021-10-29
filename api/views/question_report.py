@@ -49,7 +49,6 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['delete'], url_path='delete-report')
     def delete_report(self, request, pk=None):
         queryset = self.filter_queryset(self.get_queryset())
-        for q in queryset:
-            q.delete()
+        queryset[0].delete()
 
         return Response({"success": True})
