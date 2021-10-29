@@ -1,10 +1,6 @@
-from collections import OrderedDict
-
-from django_filters import NumberFilter
-from django_filters.rest_framework import FilterSet, DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters
 from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from accounts.models import MyUser
@@ -19,7 +15,7 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionReportSerializer
     permission_classes = [IsAuthenticated, ]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['question','user']
+    filterset_fields = ['question', 'user']
 
     def perform_create(self, serializer):
         serializer.save()
@@ -39,7 +35,7 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
                                                                            )
         question_report.save()
 
-        return Response(request.data)
+        return Response({"success": True})
 
     @action(detail=False, methods=['get'], url_path='get-report')
     def get_report(self, request, pk=None):
@@ -56,4 +52,4 @@ class QuestionReportViewSet(viewsets.ModelViewSet):
         for q in queryset:
             q.delete()
 
-        return Response("success")
+        return Response({"success": True})
