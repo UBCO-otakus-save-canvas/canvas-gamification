@@ -2,9 +2,13 @@ from django_filters import NumberFilter
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from course.models.models import UserQuestionJunction, Question
 from api.pagination import BasePagination
 from api.serializers import UQJSerializer
+from collections import OrderedDict
 
 
 class UQJFilterSet(FilterSet):
@@ -37,3 +41,11 @@ class UQJViewSet(viewsets.ReadOnlyModelViewSet):
                 accessible_uqj.append(temp.question)
         uqj = user.question_junctions.filter(question__in=accessible_uqj)
         return uqj
+
+    @action(detail=False, methods=['get'], url_path='all-uqj')
+    def get_all_uqj(self, request, pk=None):
+        uqjs = UserQuestionJunction.objects.all()
+        serialized = []
+        for uqj in uqjs:
+            serialized.append(OrderedDict(self.get_serializer(uqj).data))
+        return Response(serialized)
