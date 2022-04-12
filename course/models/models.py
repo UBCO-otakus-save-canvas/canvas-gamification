@@ -18,9 +18,9 @@ from course.utils.variables import render_text, generate_variables
 from general.services.action import create_submission_evaluation_action
 
 DIFFICULTY_CHOICES = [
-    ("EASY", "EASY"),
-    ("NORMAL", "MEDIUM"),
-    ("HARD", "HARD"),
+    ("EASY", "Easy"),
+    ("MEDIUM", "Medium"),
+    ("HARD", "Hard"),
 ]
 
 
@@ -65,7 +65,7 @@ class QuestionCategory(models.Model):
 
     @property
     def next_category_ids(self):
-        return self.next_categories.values_list('pk', flat=True)
+        return list(self.next_categories.values_list('pk', flat=True))
 
 
 class TokenValue(models.Model):
@@ -77,7 +77,7 @@ class TokenValue(models.Model):
         if self.value is None:
             if self.difficulty == 'EASY':
                 self.value = 1
-            if self.difficulty == "NORMAL":
+            if self.difficulty == 'MEDIUM':
                 self.value = 2
             if self.difficulty == 'HARD':
                 self.value = 3
@@ -239,6 +239,7 @@ class UserQuestionJunction(models.Model):
 
     is_solved = models.BooleanField(default=False, db_index=True)
     is_partially_solved = models.BooleanField(default=False, db_index=True)
+    is_favorite = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('user', 'question')
@@ -380,8 +381,8 @@ class Submission(PolymorphicModel):
     @property
     def status_color(self):
         dic = {
-            "Evaluating": 'info',
-            "Wrong": 'danger',
+            "Evaluating": 'default',
+            "Wrong": 'error',
             "Partially Correct": 'warning',
             "Correct": 'success',
         }
@@ -457,6 +458,11 @@ class Submission(PolymorphicModel):
 
     def submit(self):
         pass
+
+    def has_view_permission(self, user):
+        if user.is_teacher or self.user is user:
+            return True
+        return False
 
 
 class CodeSubmission(Submission):
